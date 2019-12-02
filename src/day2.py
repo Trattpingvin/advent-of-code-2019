@@ -11,9 +11,11 @@ class Computer():
 		self.PC = 0
 		self.running = False
 
-	def read_from_file(self, file):
+	def read_from_file(self, file, delimiter=','):
+		self.memory = []
 		with open(file) as f:
-			self.memory = [int(x) for x in f.readline().split(',')]
+			for line in f:
+				self.memory.extend([int(x) for x in line.split(',')])
 
 	def run(self):
 		self.running = True
