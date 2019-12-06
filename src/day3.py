@@ -1,7 +1,10 @@
+import time
+
 def manhattan(coord):
 	return abs(coord[0])+abs(coord[1])
 
 def solvepart1():
+	start = time.clock()
 	wires = [[],[]]
 	with open('inputs/day3.txt') as f:
 		wire = -1
@@ -30,19 +33,25 @@ def solvepart1():
 					y += ydelta
 					x += xdelta
 
+	building = time.clock()
+
 	for i in range(2):
 		wires[i].remove((0,0))
 		print("found "+str(len(wires[i]))+" wire segments from wire "+str(i))
-		wires[i].sort(key=manhattan)
+		wires[i].sort(key=manhattan, reverse=True)
+
+	sorting = time.clock()
+	
 	i = 0
 	while True:
 		i += 1
 		temp_wires = (set(), set())
 		for w in range(2):
-			while manhattan(wires[w][0]) == i:
-				temp_wires[w].add(wires[w].pop(0))
+			while manhattan(wires[w][len(wires[w])-1]) == i:
+				temp_wires[w].add(wires[w].pop())
 		for w1 in temp_wires[0]:
 			if w1 in temp_wires[1]:
+				print("Building took {0} s.\nSorting took {1} s.\nFinding intersection took {2} s".format(building-start, sorting-building, time.clock()-sorting))
 				return manhattan(w1)
 
 	return False
