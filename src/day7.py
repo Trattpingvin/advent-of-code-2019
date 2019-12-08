@@ -1,5 +1,8 @@
+import itertools
+import math
+
 class Computer():
-	def __init__(self, elf_input):
+	def __init__(self, phase):
 		self.OPCODES = {
 			1: self.ADD,
 			2: self.MUL,
@@ -12,16 +15,14 @@ class Computer():
 			99: self.EXIT
 		}
 		self.input = []
-		try: #if elf input is iterable then we extend input with it, otherwise we just add it
-			for ei in elf_input:
-				self.input.append(ei)
-		except TypeError:
-			self.input.append(elf_input)
-		self.output = None
+		self.input.append(phase)
+		self.phase = phase
+		self.last_output = None
 		self.input_index = 0
 		self.PC = 0
-		self.running = False
 		self.output_targets = []
+		self.running = True
+
 
 	def read_from_file(self, file, delimiter=','):
 		self.memory = []
@@ -29,20 +30,19 @@ class Computer():
 			self.memory.extend([x.strip() for x in f.read().split(',')])
 
 	def run(self):
-		self.running = True
 		while self.running:
 			if self.PC<len(self.memory):
-				self.step()
-
-	def step(self):
-		if self.running:
-			if self.PC<len(self.memory):
-				mode = self.memory[self.PC][:-2]
-				op = int(self.memory[self.PC][-2:])
-				self.OPCODES[op](mode)
+				if self.PC<len(self.memory):
+					mode = self.memory[self.PC][:-2]
+					op = int(self.memory[self.PC][-2:])
+					result = self.OPCODES[op](mode)
+					if result == -1:
+						return False
 			else:
 				print("Ran through entire memory")
+				self.running = False
 				return True
+
 
 	def add_output_target(self, f):
 		self.output_targets.append(f)
@@ -67,6 +67,7 @@ class Computer():
 		
 
 	def send_output(self, out):
+		self.last_output = out
 		for f in self.output_targets:
 			f(out)
 
@@ -93,7 +94,7 @@ class Computer():
 			self.input_index += 1
 			self.PC += 2
 		else:
-			return False
+			return -1
 
 	def READ(self, mode):
 		operand0 = self.get_value(mode, self.memory[self.PC+1])
@@ -147,6 +148,10 @@ class Computer():
 		self.PC += 1
 		return True
 
+	
+	def __repr__(self):
+		return "Computer "+str(self.phase)
+
 class ResultComparer():
 	def __init__(self):
 		self.best = 0
@@ -158,14 +163,15 @@ class ResultComparer():
 		return self.best
 
 def solvepart1():
-	import itertools
 	rc = ResultComparer()
 	num_computers = 5
 	for p in itertools.permutations(range(num_computers)):
 		cpus = []
 		for index, phase in enumerate(p):
 			if index==0:
-				cpus.append(Computer((str(phase), "0")))
+				cpu = Computer(str(phase))
+				cpu.add_input("0")
+				cpus.append(cpu)
 			else:
 				cpus.append(Computer(str(phase)))
 		for i in range(num_computers-1):
@@ -178,9 +184,29 @@ def solvepart1():
 
 
 def solvepart2():
-	pass
+	rc = ResultComparer()
+	num_computers = 5
+	for p in itertools.permutations(range(5, 5+num_computers)):
+		cpus = []
+		for index, phase in enumerate(p):
+			if index==0:
+				cpu = Computer(str(phase))
+				cpu.add_input("0")
+				cpus.append(cpu)
+			else:
+				cpus.append(Computer(str(phase)))
+		for i in range(num_computers-1):
+			cpus[i].add_output_target(cpus[i+1].add_input)
+		cpus[num_computers-1].add_output_target(cpus[0].add_input)
+		for cpu in cpus:
+			cpu.read_from_file('inputs/day7.txt')
+		while any([cpu.running for cpu in cpus]):
+			for cpu in cpus:
+				cpu.run()
+		rc.check(cpus[num_computers-1].last_output)
+	return rc.get_best()
 
 if __name__=='__main__':
 	print(solvepart1())
-	#print(solvepart2())
+	print(solvepart2())
 
