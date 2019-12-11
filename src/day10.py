@@ -50,10 +50,11 @@ def solvepart2(base_coord):
 	with open('inputs/day10.txt') as f:
 		for y, line in enumerate(f):
 			for x, char in enumerate(line.strip()):
-				if char == '#':
-					polar = Polar(base_coord[0] - int(x), base_coord[1] - int(y))
-					chart.append(polar)
-					polar_to_cartesian[polar] = (x, y)
+				if not (y == base_coord[1] and x == base_coord[0]):
+					if char == '#':
+						polar = Polar(base_coord[0] - int(x), base_coord[1] - int(y))
+						chart.append(polar)
+						polar_to_cartesian[polar] = (x, y)
 
 	chart.sort(key=lambda x: x.r)
 	chart.sort(key=lambda x: x.phi)
@@ -68,16 +69,53 @@ def solvepart2(base_coord):
 			removed += 1
 			if removed == 200:
 				return polar_to_cartesian[current]
-#			print("Removed "+str(polar_to_cartesian[current]))
+			#print("Removed "+str(polar_to_cartesian[current]))
 			chart.remove(current)
 		else:
 			i += 1
 		prev_phi = current.phi
 		
+def get_order(base_coord):
+	chart = []
+	order = []
+	polar_to_cartesian = {}
+	with open('inputs/day10.txt') as f:
+		for y, line in enumerate(f):
+			order.append(list(line.strip()))
+			for x, char in enumerate(line.strip()):
+				if not (y == base_coord[1] and x == base_coord[0]):
+					if char == '#':
+						polar = Polar(base_coord[0] - int(x), base_coord[1] - int(y))
+						chart.append(polar)
+						polar_to_cartesian[polar] = (x, y)
 
+	chart.sort(key=lambda x: x.r)
+	chart.sort(key=lambda x: x.phi)
+	prev_phi = math.inf
+	
+	removed = 0
+	i = 0
+	while True:
+		index = i%len(chart)
+		current = chart[index]
+		if current.phi != prev_phi:
+			removed += 1
+			cart = polar_to_cartesian[current]
+			order[cart[1]][cart[0]] = removed
+			if removed == 200:
+				return order
+			chart.remove(current)
+		else:
+			i += 1
+		prev_phi = current.phi
 
 if __name__=='__main__':
 	coord, score = solvepart1()
-	print(score)
-	print(solvepart2(coord))
+	print(coord)
+	#print(score)
+	#print(solvepart2(coord))
+	order = get_order(coord)
+	for line in order:
+		print(",".join([str(x) for x in line]))
+		pass
 
