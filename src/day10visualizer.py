@@ -42,32 +42,40 @@ class Visualizer():
 		shoot_target = 0
 		shoot_start = None
 		ASTEROID_SIZE = self.tile_size // 2 - 1
+		started = False
 		while True:
 			start = pygame.time.get_ticks()
 			if shoot_target == 200:
 				return
 			screen.fill((0,0,0))
+			if not started:
+				pygame.draw.circle(screen, (125, 111, 12), (400, 400), 200)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT: sys.exit()
-			for y in range(len(self.chart)):
-				for x in range(len(self.chart[0])):
-					if self.chart[y][x] == '#' or self.chart[y][x].isdigit():
-						pygame.draw.circle(screen, (146, 133, 125), self.get_asteroid_location(x, y), ASTEROID_SIZE)
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_SPACE:
+						started = True
 
-			pygame.draw.circle(screen, (20, 240, 50), self.get_asteroid_location(*self.base), ASTEROID_SIZE)
+			if started:
+				for y in range(len(self.chart)):
+					for x in range(len(self.chart[0])):
+						if self.chart[y][x] == '#' or self.chart[y][x].isdigit():
+							pygame.draw.circle(screen, (146, 133, 125), self.get_asteroid_location(x, y), ASTEROID_SIZE)
 
-			if self.elapsed(previous_shot) > self.FIRE_TIME:
-				shooting = True
-				shoot_start = pygame.time.get_ticks()
-				previous_shot = pygame.time.get_ticks()
-				shoot_target += 1
-				trgt = self.coords_for_target(shoot_target)
-			if shooting:
-				if self.elapsed(shoot_start) > self.SHOOT_DURATION:
-					self.chart[trgt[1]][trgt[0]] = "."
-					shooting = False
-				pygame.draw.circle(screen, (220, 20, 20), self.get_asteroid_location(*trgt), ASTEROID_SIZE)
-				pygame.draw.line(screen, (220, 20, 20), self.get_asteroid_location(*self.base), self.get_asteroid_location(*trgt))
+				pygame.draw.circle(screen, (20, 240, 50), self.get_asteroid_location(*self.base), ASTEROID_SIZE)
+
+				if self.elapsed(previous_shot) > self.FIRE_TIME:
+					shooting = True
+					shoot_start = pygame.time.get_ticks()
+					previous_shot = pygame.time.get_ticks()
+					shoot_target += 1
+					trgt = self.coords_for_target(shoot_target)
+				if shooting:
+					if self.elapsed(shoot_start) > self.SHOOT_DURATION:
+						self.chart[trgt[1]][trgt[0]] = "."
+						shooting = False
+					pygame.draw.circle(screen, (220, 20, 20), self.get_asteroid_location(*trgt), ASTEROID_SIZE)
+					pygame.draw.line(screen, (220, 20, 20), self.get_asteroid_location(*self.base), self.get_asteroid_location(*trgt))
 
 			pygame.display.flip()
 			end = pygame.time.get_ticks()
