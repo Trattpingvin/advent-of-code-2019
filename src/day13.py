@@ -200,7 +200,7 @@ class Day13():
 		self.cpu = Computer()
 		self.cpu.add_output_target(self.handle_output)
 		self.cpu.read_from_file('inputs/day13.txt')
-		self.gametiles = []
+		self.gametiles = {}
 		self.outputs = 0
 		self.score = 0
 		
@@ -222,15 +222,14 @@ class Day13():
 			self.cpu.run()
 			ans = 0
 			for tile in self.gametiles:
-				if tile.id == 2:
+				if self.gametiles[tile].id == 2:
 					ans += 1
 			if ans==0:
 				return self.score
 			self.drawboard()
 			print()
-			#print("tiles left: "+str(ans))
-			#print("score: "+str(self.score))
-			print(len(self.gametiles))
+			print("tiles left: "+str(ans))
+			print("score: "+str(self.score))
 			self.handle_input()
 			
 
@@ -261,6 +260,7 @@ class Day13():
 		playerinput = 0
 		if playerinput == 0:
 			for tile in self.gametiles:
+				tile = self.gametiles[tile]
 				if tile.id == 3:
 					paddlex = tile.x
 				elif tile.id == 4:
@@ -286,7 +286,7 @@ class Day13():
 	def drawboard(self):
 		self.screen.fill((0,0,0))
 		for tile in self.gametiles:
-			self.drawrect(tile)
+			self.drawrect(self.gametiles[tile])
 		pygame.display.flip()
 
 
@@ -302,7 +302,7 @@ class Day13():
 			if self.current_tile.x == -1 and self.current_tile.y == 0:
 				self.score = o
 			else:
-				self.gametiles.append(self.current_tile)
+				self.gametiles[(self.current_tile.x, self.current_tile.y)] = self.current_tile
 		self.outputs += 1
 
 
